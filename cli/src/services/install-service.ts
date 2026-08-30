@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readdir, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { SkillHubClient } from '../clients/skillhub-client'
 import { InventoryStore } from '../stores/inventory-store'
@@ -72,6 +72,7 @@ export async function installSkill(options: InstallOptions): Promise<{ installed
 
     try {
       await extractZip(buffer, tempDir)
+      await prepareInstalledExecutables(tempDir)
 
       const installedAt = new Date().toISOString()
       const snapshot = await snapshotSkillDirectory(tempDir)
@@ -138,4 +139,29 @@ export async function installSkill(options: InstallOptions): Promise<{ installed
   }
 
   return { installed }
+}
+
+/**
+ * ZIP extraction does not reliably preserve Unix executable bits across the
+ * registry upload/download path. Restore the executable bits for the managed
+ * package entrypoints before the installation is moved into place.
+ */
+async function prepareInstalledExecutables(skillDir: string): Promise<void> {
+  if (process.platform === 'win32') return
+
+  const executablePaths: string[] = []
+  const updateScript = join(skillDir, 'update.sh')
+  if (await pathExists(updateScript)) executablePaths.push(updateScript)
+
+  const binDir = join(skillDir, 'bin')
+  if (await pathExists(binDir)) {
+    const entries = await readdir(binDir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (!entry.isDirectory()) executablePaths.push(join(binDir, entry.name))
+    }
+  }
+
+  for (const executablePath of executablePaths) {
+    await chmod(executablePath, 0o755)
+  }
 }

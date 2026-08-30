@@ -1,4 +1,4 @@
-import { access, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
+import { access, mkdir, mkdtemp, readFile, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, test } from 'bun:test'
@@ -147,6 +147,30 @@ describe('installSkill', () => {
 
     expect(await readFile(join(skillDir, 'SKILL.md'), 'utf-8')).toBe('# New')
     expect(await exists(join(skillDir, 'stale.txt'))).toBe(false)
+  })
+
+  test('restores executable permissions for managed package entrypoints', async () => {
+    if (process.platform === 'win32') return
+
+    globalThis.fetch = installFetch({
+      'SKILL.md': '# Demo',
+      'update.sh': '#!/usr/bin/env sh\n',
+      'bin/console-cli-linux-amd64': '#!/usr/bin/env sh\n'
+    })
+    const home = await mkdtemp(join(tmpdir(), 'skillhub-install-home-'))
+    const rootDir = await mkdtemp(join(tmpdir(), 'skillhub-install-root-'))
+
+    await installSkill({
+      registry: 'http://registry.test',
+      namespace: 'global',
+      slug: 'demo',
+      targets: [{ agent: 'codex', rootDir, scope: 'project', source: 'explicit' }],
+      force: false,
+      home
+    })
+
+    expect((await stat(join(rootDir, 'demo', 'update.sh'))).mode & 0o777).toBe(0o755)
+    expect((await stat(join(rootDir, 'demo', 'bin/console-cli-linux-amd64'))).mode & 0o777).toBe(0o755)
   })
 
   test('force removes stale inventory records that point at the replaced install directory', async () => {
