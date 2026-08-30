@@ -6,13 +6,13 @@ SkillHub CLI is the official command-line tool for SkillHub, designed for search
 
 ```bash
 # Install globally via npm
-npm install -g @astron-team/skillhub
+npm install -g @mtt/skillhub
 
 # Or run directly with npx
-npx @astron-team/skillhub@latest version
+npx @mtt/skillhub@latest version
 
 # Or install globally via Bun
-bun add -g @astron-team/skillhub
+bun add -g @mtt/skillhub
 ```
 
 ## 🚀 Quick Start
@@ -370,8 +370,8 @@ skillhub update
 ```
 
 Update mechanism:
-- Installed via npm globally: Auto-executes `npm install -g @astron-team/skillhub@latest`
-- Installed via Bun globally: Auto-executes `bun add -g @astron-team/skillhub@latest`
+- Installed via npm globally: Auto-executes `npm install -g @mtt/skillhub@latest`
+- Installed via Bun globally: Auto-executes `bun add -g @mtt/skillhub@latest`
 - Run via npx: Prompts manual update command
 - Unknown installation method: Prompts manual update
 
