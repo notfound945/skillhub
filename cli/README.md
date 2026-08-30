@@ -6,13 +6,13 @@ SkillHub CLI is the official command-line tool for SkillHub, designed for search
 
 ```bash
 # Install globally via npm
-npm install -g @mtt/skillhub
+npm install -g @mtt/skillhub --registry=https://bynpm.boyaa.com
 
 # Or run directly with npx
-npx @mtt/skillhub@latest version
+npx @mtt/skillhub@latest version --registry=https://bynpm.boyaa.com
 
 # Or install globally via Bun
-bun add -g @mtt/skillhub
+bun add -g @mtt/skillhub --registry=https://bynpm.boyaa.com
 ```
 
 ## 🚀 Quick Start
